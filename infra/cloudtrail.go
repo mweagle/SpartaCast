@@ -20,9 +20,9 @@ type CloudTrailDecorator struct {
 	lambdaFuncs              []*sparta.LambdaAWSInfo
 }
 
-// Description satisfies the Describable interface...How to
+// Describe satisfies the Describable interface...How to
 // connect this to cloudTrail...then step function?
-func (id *CloudTrailDecorator) Description(targetNodeName string) (*sparta.DescriptionInfo, error) {
+func (id *CloudTrailDecorator) Describe(targetNodeName string) (*sparta.DescriptionInfo, error) {
 
 	descNodes := make([]*sparta.DescriptionTriplet, 0)
 	descNodes = append(descNodes,
@@ -31,7 +31,7 @@ func (id *CloudTrailDecorator) Description(targetNodeName string) (*sparta.Descr
 			DisplayInfo: &sparta.DescriptionDisplayInfo{
 				SourceIcon: &sparta.DescriptionIcon{
 					Category: "Storage",
-					Name:     "Amazon-Simple-Storage-Service-S3.svg",
+					Name:     "Amazon-Simple-Storage-Service-S3@4x.png",
 				},
 			},
 			TargetNodeName: "CloudTrail"},
@@ -40,7 +40,7 @@ func (id *CloudTrailDecorator) Description(targetNodeName string) (*sparta.Descr
 			DisplayInfo: &sparta.DescriptionDisplayInfo{
 				SourceIcon: &sparta.DescriptionIcon{
 					Category: "Management & Governance",
-					Name:     "AWS-CloudTrail_light-bg.svg",
+					Name:     "AWS-CloudTrail_light-bg@4x.png",
 				},
 			},
 			TargetNodeName: "EventBridge"},
@@ -49,7 +49,7 @@ func (id *CloudTrailDecorator) Description(targetNodeName string) (*sparta.Descr
 			DisplayInfo: &sparta.DescriptionDisplayInfo{
 				SourceIcon: &sparta.DescriptionIcon{
 					Category: "Application Integration",
-					Name:     "Amazon-EventBridge_light-bg.svg",
+					Name:     "Amazon-EventBridge_light-bg@4x.png",
 				},
 			},
 			TargetNodeName: "StepFunction"},
@@ -57,8 +57,8 @@ func (id *CloudTrailDecorator) Description(targetNodeName string) (*sparta.Descr
 			SourceNodeName: "StepFunction",
 			DisplayInfo: &sparta.DescriptionDisplayInfo{
 				SourceIcon: &sparta.DescriptionIcon{
-					Category: "_Group Icons",
-					Name:     "AWS-Step-Function_light-bg.svg",
+					Category: "Application Integration",
+					Name:     "AWS-Step-Functions_light-bg@4x.png",
 				},
 			},
 			TargetNodeName: targetNodeName})
