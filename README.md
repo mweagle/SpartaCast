@@ -26,6 +26,7 @@ and must include the necessary [tags](https://help.apple.com/itc/podcasts_connec
 1. Create a _feed.md_ file and copy it to the user content bucket.
 2. Create one or more _episodeN.md_ files and copy them adjacent to the _feed.md_ file.
 3. Monitor results in the [Step Functions Console](https://aws.amazon.com/step-functions/)
+4. Add the public S3 URL to the _/public/feed/feed.xml_ to your [favorite podcast player](https://medium.com/@joshmuccio/how-to-manually-add-a-rss-feed-to-your-podcast-app-on-desktop-ios-android-478d197a3770).
 
 ## Details
 
