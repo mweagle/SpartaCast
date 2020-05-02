@@ -148,7 +148,7 @@ func (sspp *sectionScopedPropertyParser) Walk(node *blackfriday.Node, entering b
 	return blackfriday.GoToNext
 }
 
-func parseCastConfig(propertiesTableHeaderName string,
+func parseMarkson(propertiesTableHeaderName string,
 	properties *[]KeyValuePair) blackfriday.NodeVisitor {
 
 	var curParser headerScopedParser
@@ -219,7 +219,7 @@ func UnmarshalMarkson(input io.Reader,
 	}
 
 	properties := make([]KeyValuePair, 0)
-	tree.Walk(parseCastConfig(propertyTableHeaderName, &properties))
+	tree.Walk(parseMarkson(propertyTableHeaderName, &properties))
 
 	// So we need to extract the content
 	mapProperties := make(map[string]interface{})

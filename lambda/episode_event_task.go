@@ -74,7 +74,7 @@ func (lambda *handleEpisodeS3StateChangeTask) Handler() interface{} {
 		logger.WithFields(logrus.Fields{
 			"value":  configEntry.Episode,
 			"isSSML": isSSML,
-		}).Info("User Text")
+		}).Debug("User Text")
 
 		outputKeyPrefix := fmt.Sprintf("%s/%s/%s",
 			PublicKeyPath,

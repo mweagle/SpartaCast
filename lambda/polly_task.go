@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/polly"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/google/uuid"
 	sparta "github.com/mweagle/Sparta"
 	spartaCF "github.com/mweagle/Sparta/aws/cloudformation"
 	gocf "github.com/mweagle/go-cloudformation"
@@ -31,10 +32,8 @@ func newDeleteObsoleteOutputTask(input *SpartaCastTask,
 		s3Svc := s3.New(awsSession)
 
 		// It's done...get the old item if it exists and delete it...
-		manifestKey := fmt.Sprintf("%s/%s/%s.json",
-			PublicKeyPath,
-			KeyComponentMetadata,
-			input.Key)
+		manifestKey := manifestKeyPath(input.Key)
+
 		existingSpartaCastTask := SpartaCastTask{}
 		unmarshalErr := unmarshalFromS3Object(awsSession,
 			input.Bucket,
@@ -45,7 +44,7 @@ func newDeleteObsoleteOutputTask(input *SpartaCastTask,
 			"inputKey":   input.Key,
 			"error":      unmarshalErr,
 			"legacyItem": existingSpartaCastTask,
-		}).Info("Purging oobsoleted entry")
+		}).Debug("Purging obsoleted entry")
 
 		if unmarshalErr == nil &&
 			existingSpartaCastTask.SynthesisTask.OutputUri != nil &&
@@ -145,12 +144,18 @@ func newCreateMetadataTask(input *SpartaCastTask,
 
 		// Super...write this summary back to the root of the bucket s.t.
 		// we can use an Athena query to fetch everything...
-		// TODO -  Update all the items info...
+		itemUUID, itemUUIDErr := uuid.NewRandom()
+		if itemUUIDErr != nil {
+			return itemUUIDErr
+		}
 		input.Item.PubDate = time.Now().Format(time.RFC3339)
 		input.Item.EnclosureLink = *input.SynthesisTask.OutputUri
 		input.Item.EnclosureByteLength = *s3HeadObjectResp.ContentLength
-		jsonBytes, _ := json.Marshal(&input)
-
+		input.Item.GUID = itemUUID.String()
+		jsonBytes, jsonBytesErr := json.Marshal(&input)
+		if jsonBytesErr != nil {
+			return jsonBytesErr
+		}
 		putObjectInput := &s3.PutObjectInput{
 			Bucket: aws.String(input.Bucket),
 			Key:    aws.String(manifestKey),
@@ -213,7 +218,7 @@ func (lambda *handlePollyTask) Handler() interface{} {
 		input.SynthesisTask = getTaskResp.SynthesisTask
 		logger.WithFields(logrus.Fields{
 			"input": input,
-		}).Info("Updated Task Status")
+		}).Debug("Updated Task Status")
 
 		switch *input.SynthesisTask.TaskStatus {
 		case polly.TaskStatusFailed:

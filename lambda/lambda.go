@@ -31,6 +31,13 @@ const (
 	ContentTypeMP3 = "audio/mpeg"
 )
 
+func manifestKeyPath(baseKeyName string) string {
+	return fmt.Sprintf("%s/%s/%s.json",
+		PublicKeyPath,
+		KeyComponentMetadata,
+		baseKeyName)
+}
+
 // ParseSpartaConfigSpec returns an EpisodeSpec input
 // and returns the data
 func ParseSpartaConfigSpec(input io.Reader,
@@ -64,10 +71,10 @@ type Feed struct {
 	Rating         string `json:"rating,omitempty"`
 	SkipHours      string `json:"skipHours,omitempty"`
 	SkipDays       string `json:"skipDays,omitempty"`
+	SubTitle       string `json:"subtitle"`
 	TTL            string `json:"ttl,omitempty"`
 	WebMaster      string `json:"webMaster,omitempty"`
 	IAuthor        string `json:"itunes:author,omitempty"`
-	ISubtitle      string `json:"itunes:subtitle,omitempty"`
 	IExplicit      string `json:"itunes:explicit,omitempty"`
 	IComplete      string `json:"itunes:complete,omitempty"`
 }
@@ -88,14 +95,14 @@ type Item struct {
 	Comments            string `json:"comments"`
 	Source              string `json:"source"`
 	PubDate             string `json:"pubDate"`
-	ISubtitle           string `json:"itunes:subtitle"`
+	SubTitle            string `json:"subtitle"`
 	IExplicit           string `json:"itunes:explicit"`
 	IIsClosedCaptioned  string `json:"itunes:isClosedCaptioned"`
 	IOrder              string `json:"itunes:order"`
-	Episode             string `json:"episode"`
 	PollyVoiceID        string `json:"polly:voiceID"`
 	PollyEngineType     string `json:"polly:engineType"`
 	PollyLanguageCode   string `json:"polly:languageCode"`
+	Episode             string `json:"episode"`
 }
 
 func keyPathFromS3URI(s3URI string, bucketName string) (string, error) {

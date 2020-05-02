@@ -59,7 +59,6 @@ func readFeedMetadata(awsSession *session.Session,
 		} else {
 			// Create the URL to the item, but for that we need to know
 			// the full bucket URI...
-			// FFS
 			feedItem.Link = selfURL(FeedConfigName)
 			feedMetadata.feed = &feedItem
 		}
@@ -71,7 +70,6 @@ func readFeedMetadata(awsSession *session.Session,
 	}(awsSession)
 
 	// Read all the entries in the metadata key prefix and add them
-
 	s3Svc := s3.New(awsSession)
 	listObjectsInput := &s3.ListObjectsInput{
 		Bucket: aws.String(bucket),
@@ -138,25 +136,73 @@ func readFeedMetadata(awsSession *session.Session,
 		return true
 	})
 	// Sort everything...
-	// Great, sort the feed by timestamp...how to get that?
 	sort.Slice(feedMetadata.entries, func(lhs int, rhs int) bool {
 		leftEntry := feedMetadata.entries[lhs]
 		rightEntry := feedMetadata.entries[rhs]
-
 		parsedLeftDate, _ := time.Parse(time.RFC3339, leftEntry.PubDate)
 		parsedRightDate, _ := time.Parse(time.RFC3339, rightEntry.PubDate)
-
-		return parsedLeftDate.Unix() < parsedRightDate.Unix()
+		return parsedLeftDate.Unix() > parsedRightDate.Unix()
 	})
-
 	return feedMetadata, nil
+}
+
+func populatePodcast(feed *Feed, pc *podcast.Podcast) error {
+
+	pc.AddAuthor(feed.AuthorName, feed.AuthorEmail)
+	pc.AddSubTitle(feed.SubTitle)
+	pc.ISubtitle = feed.SubTitle
+
+	pc.IAuthor = feed.AuthorName
+	pc.IOwner = &podcast.Author{
+		Name:  feed.AuthorName,
+		Email: feed.AuthorEmail,
+	}
+	pc.AddImage(feed.Image)
+	pc.IImage = &podcast.IImage{
+		HREF: feed.Image,
+	}
+	pc.WebMaster = feed.WebMaster
+	pc.AddCategory(feed.Category, []string{feed.Subcategory})
+	pc.IExplicit = feed.IExplicit
+	pc.IAuthor = feed.IAuthor
+
+	return nil
+}
+
+func newEntry(entry *Item) (*podcast.Item, error) {
+	entryPubDate, entryPubDateErr := time.Parse(time.RFC3339, entry.PubDate)
+	if entryPubDateErr != nil {
+		return nil, entryPubDateErr
+	}
+	item := podcast.Item{
+		Title:       entry.Title,
+		Link:        entry.SelfLink,
+		Description: entry.Description,
+		PubDate:     &entryPubDate,
+	}
+	item.AddEnclosure(entry.EnclosureLink,
+		podcast.MP3,
+		entry.EnclosureByteLength)
+	item.AddImage(entry.Image)
+	item.IImage = &podcast.IImage{
+		HREF: entry.Image,
+	}
+	item.ISummary = &podcast.ISummary{
+		Text: entry.Description,
+	}
+	item.Link = entry.Link
+
+	return &item, nil
 }
 
 func createFeed(awsSession *session.Session,
 	metadata *feedMetadata,
 	bucketName string,
 	logger *logrus.Logger) error {
-	pubDate, _ := time.Parse(time.RFC3339, metadata.feed.PubDate)
+	pubDate, pubDateErr := time.Parse(time.RFC3339, metadata.feed.PubDate)
+	if pubDateErr != nil {
+		pubDate = time.Now()
+	}
 
 	pc := podcast.New(
 		metadata.feed.Title,
@@ -165,48 +211,25 @@ func createFeed(awsSession *session.Session,
 		&pubDate,
 		nil,
 	)
-	pc.AddAuthor(metadata.feed.AuthorName, metadata.feed.AuthorEmail)
-	pc.IAuthor = metadata.feed.AuthorName
-	pc.IOwner = &podcast.Author{
-		Name:  metadata.feed.AuthorName,
-		Email: metadata.feed.AuthorEmail,
+	// Update all the feed information...
+	pcErr := populatePodcast(metadata.feed, &pc)
+	if pcErr != nil {
+		return pcErr
 	}
-	pc.AddImage(metadata.feed.Image)
-	pc.IImage = &podcast.IImage{
-		HREF: metadata.feed.Image,
-	}
-	pc.WebMaster = metadata.feed.WebMaster
-	pc.AddCategory(metadata.feed.Category, []string{metadata.feed.Subcategory})
-	pc.IExplicit = metadata.feed.IExplicit
-	pc.IAuthor = metadata.feed.IAuthor
 
-	// Write it to a buffer...
+	// Do the same for each entry
 	for _, eachEntry := range metadata.entries {
 		// create an Item
-		entryPubDate, _ := time.Parse(time.RFC3339, eachEntry.PubDate)
-		item := podcast.Item{
-			Title:       eachEntry.Title,
-			Link:        eachEntry.SelfLink,
-			Description: eachEntry.Description,
-			PubDate:     &entryPubDate,
+		pcItem, pcItemErr := newEntry(eachEntry)
+		if pcItemErr != nil {
+			return pcItemErr
 		}
-		item.AddEnclosure(eachEntry.EnclosureLink,
-			podcast.MP3,
-			eachEntry.EnclosureByteLength)
-		item.AddImage(eachEntry.Image)
-		item.IImage = &podcast.IImage{
-			HREF: eachEntry.Image,
-		}
-		item.ISummary = &podcast.ISummary{
-			Text: eachEntry.Description,
-		}
-		item.Link = "https://gosparta.io"
-
 		// add the Item and check for validation errors
-		_, addItemErr := pc.AddItem(item)
+		_, addItemErr := pc.AddItem(*pcItem)
 		if addItemErr != nil {
 			logger.WithFields(logrus.Fields{
 				"error": addItemErr,
+				"item":  pcItem,
 				"entry": eachEntry,
 			}).Warn("Failed to add entry")
 		}
@@ -221,8 +244,10 @@ func createFeed(awsSession *session.Session,
 
 	// Ship it...
 	s3PutObjectInput := &s3.PutObjectInput{
-		Bucket:      aws.String(bucketName),
-		Key:         aws.String(fmt.Sprintf("%s/%s/feed.xml", PublicKeyPath, KeyComponentFeed)),
+		Bucket: aws.String(bucketName),
+		Key: aws.String(fmt.Sprintf("%s/%s/feed.xml",
+			PublicKeyPath,
+			KeyComponentFeed)),
 		Body:        bytes.NewReader(byteSink.Bytes()),
 		ContentType: aws.String("application/rss+xml"),
 	}
