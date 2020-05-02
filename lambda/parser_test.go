@@ -3,7 +3,6 @@ package lambda
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"testing"
@@ -13,10 +12,10 @@ import (
 )
 
 func testFile(filename string) string {
-	return filepath.Join(".", "test", filename)
+	return filepath.Join(".", "media", filename)
 }
 func TestMarkdownEpisodeParse(t *testing.T) {
-	data, _ := ioutil.ReadFile("episode.md")
+	data, _ := ioutil.ReadFile("episode1.md")
 	dataBytes := bytes.NewReader(data)
 	logger, _ := sparta.NewLogger("info")
 
@@ -28,9 +27,7 @@ func TestMarkdownEpisodeParse(t *testing.T) {
 	}
 	ret, _ := json.MarshalIndent(configEntry, "", " ")
 
-	t.Logf("RESULTS: \n%s\n", string(ret))
-	//t.Log(fmt.Sprintf("%#v", configEntry))
-	t.Logf("Episode: \n%s\n", configEntry.Episode)
+	t.Logf("Episode: \n%s\n", configEntry)
 }
 
 func TestMarkdownFeedParse(t *testing.T) {
@@ -44,5 +41,5 @@ func TestMarkdownFeedParse(t *testing.T) {
 	if specErr != nil {
 		t.Fatalf("Failed to parse: %v", specErr)
 	}
-	t.Log(fmt.Sprintf("%#v", configEntry))
+	t.Logf("Feed: \n%s\n", configEntry)
 }
