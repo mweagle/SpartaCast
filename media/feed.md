@@ -12,6 +12,7 @@ Notes
 - Markdown lists are supported
 - As inline markup
 
+
 # Properties
 
 You can put freeform text in here and it'll be ignored. Only properties
