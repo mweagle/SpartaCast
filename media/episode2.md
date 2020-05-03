@@ -18,7 +18,7 @@ property are too long to put into the table.
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
 | Title              | Episode Two                                                                                                                          |
 | Link               | https://gosparta.io                                                                                                                  |
-| Image              | https://spartacast-mweagle-eventbucket4c90d5bbaeb249178f5-yresspwnvakg.s3.us-west-2.amazonaws.com/public/feed/vscodegopher-small.png |
+| Image              | https://raw.githubusercontent.com/mweagle/SpartaCast/master/media/vscodegopher-small.png |
 | polly:voiceID      | Matthew                                                                                                                              |
 | polly:engineType   | neural                                                                                                                               |
 | polly:languageCode | en-US                                                                                                                                |

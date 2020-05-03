@@ -17,14 +17,14 @@ Notes
 You can put freeform text in here and it'll be ignored. Only properties
 in the table will get picked up. See the link for what properties are supported.
 
-| EpisodeProp     | EpisodeValue                                                                                                                         |
+| FeedProp     | FeedValue                                                                                                                         |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | Title           | SpartaCast Podcast                                                                                                                   |
 | AuthorName      | Matt Weagle                                                                                                                          |
 | AuthorEmail     | mweagle@gmail.com                                                                                                                    |
 | WebMaster       | Matt Weagle (mweagle@gmail.com)                                                                                                      |
 | Link            | https://gosparta.io                                                                                                                  |
-| Image           | https://spartacast-mweagle-eventbucket4c90d5bbaeb249178f5-yresspwnvakg.s3.us-west-2.amazonaws.com/public/feed/vscodegopher-small.png |
+| Image           | https://raw.githubusercontent.com/mweagle/SpartaCast/master/media/vscodegopher-small.png |
 | Category        | Technology                                                                                                                           |
 | itunes:explicit | No                                                                                                                                   |
 | itunes:author   | SpartaCast Author                                                                                                                    |
