@@ -62,6 +62,13 @@ When a new _episode.md_ is uploaded to the event bucket, it triggers a CloudTrai
 
 See the [lambda.go](https://github.com/mweagle/SpartaCast/blob/master/lambda/lambda.go) source file for the full set of recognized properties.
 
+To see the full CloudFormation template, run:
+
+```
+> go run main.go describe --s3Bucket $MY_S3_BUCKET --out graph.html
+> open graph.html
+```
+
 # Markson Configuration
 
 The Markdown configuration represents a flat Key-Value space. Key-Value pairs can be represented in two different ways:
